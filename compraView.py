@@ -6,14 +6,12 @@ from config import API_URL
 
 
 class CompraViewPorCategoria(discord.ui.View):
-    def __init__(self, user: discord.Member, channel: discord.TextChannel):
-        super().__init__(timeout=180)
+    def __init__(self, user: discord.User, interaction_channel: discord.TextChannel, estoque: dict):
+        super().__init__(timeout=60)
         self.user = user
-        self.channel = channel
-        self.estoque = {}
-        self.categorias = []
+        self.interaction_channel = interaction_channel
         self.message = None
-        self.loading = False  # Novo: flag para controlar carregamento
+        self.add_item(CategoriaDropdown(estoque))
 
         # Dropdown de categorias
         self.categoria_select = discord.ui.Select(
@@ -178,4 +176,29 @@ class CompraViewPorCategoria(discord.ui.View):
             f"Itens disponíveis em {categoria}:",
             view=view_itens,
             ephemeral=True
+        )
+
+class CategoriaDropdown(discord.ui.Select):
+    def __init__(self, estoque: dict):
+        options = []
+        for categoria in estoque:
+            if estoque[categoria]:
+                options.append(discord.SelectOption(
+                    label=categoria.title(),
+                    value=categoria
+                ))
+
+        if not options:
+            options = [
+                discord.SelectOption(
+                    label="Nenhuma categoria disponível",
+                    value="nada"
+                )
+            ]
+
+        super().__init__(
+            placeholder="Selecione uma categoria:",
+            min_values=1,
+            max_values=1,
+            options=options
         )

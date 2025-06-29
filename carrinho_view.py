@@ -1,8 +1,7 @@
 import discord
 from carrinho import listar_carrinho, limpar_carrinho, remover_item, finalizar_compra, adicionar_item
 import discord.utils
-from config import ROLE_BOOSTER, CANAL_PEDIDOS
-
+from config import ROLE_BOOSTER, CANAL_PEDIDOS, API_URL
 
 from typing import Tuple
 
@@ -95,9 +94,16 @@ class AddItemsButton(discord.ui.Button):
         if interaction.response.is_done():
             return
         await interaction.response.defer(ephemeral=True)
+        from compraView import CompraViewPorCategoria
+
+        # Dentro do callback
         try:
-            from compraView import CompraViewPorCategoria
-            view = CompraViewPorCategoria(interaction.user, interaction.channel)
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(f"{API_URL}/estoque")
+                response.raise_for_status()
+                estoque = response.json()
+
+            view = CompraViewPorCategoria(interaction.user, interaction.channel, estoque)
             message = await interaction.followup.send(
                 "Selecione uma categoria:",
                 view=view,
