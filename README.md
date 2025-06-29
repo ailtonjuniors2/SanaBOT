@@ -19,4 +19,7 @@ Este projeto está disponível apenas para:
 - Clientes autorizados
 - Equipe de desenvolvimento designada
 
-Para solicitar acesso ou informações, entre em contato.
+Para solicitar informações, entre em contato.
+## 🔒 Licença  
+Este é um software **pago e proprietário**. O acesso ao código-fonte é restrito a licenciados.    
+- Leia os [Termos Completos](./LICENSE).
