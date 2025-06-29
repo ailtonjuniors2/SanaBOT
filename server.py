@@ -21,6 +21,10 @@ def carregar_estoque():
     with open(CAMINHO_ESTOQUE, "r") as f:
         return json.load(f)
 
+@app.get("/")
+def root():
+    return {"status": "ok"}
+
 def salvar_estoque(estoque):
     with open(CAMINHO_ESTOQUE, "w") as f:
         json.dump(estoque, f, indent=4)
