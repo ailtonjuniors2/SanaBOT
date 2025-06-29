@@ -22,4 +22,4 @@ Este projeto está disponível apenas para:
 Para solicitar informações, entre em contato.
 ## 🔒 Licença  
 Este é um software **pago e proprietário**. O acesso ao código-fonte é restrito a licenciados.    
-- Leia os [Termos Completos](./LICENSE).
+- Leia os [Termos Completos](./LICENSE.md).
