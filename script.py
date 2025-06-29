@@ -1,5 +1,5 @@
 import os
-from config import API_URL, BOT_PREFIX, init_config
+from config import API_URL, BOT_PREFIX
 import discord
 from discord.ext import commands
 from ticket_view import TicketView
@@ -22,8 +22,7 @@ bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
 @bot.event
 async def on_ready():
     for guild in bot.guilds:
-        init_config(guild)
-    print(f"Bot logado como {bot.user}")
+        print(f"Bot logado como {bot.user}")
 
     # Verifica se o canal de pedidos existe
     pedidos_channel = discord.utils.get(bot.get_all_channels(), name="﹙📝﹚⋆﹒𝐏edidos﹒")
