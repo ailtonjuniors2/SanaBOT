@@ -1,7 +1,8 @@
 import discord
 from carrinho import listar_carrinho, limpar_carrinho, remover_item, finalizar_compra, adicionar_item
 import discord.utils
-from config import ROLE_BOOSTER
+from config import ROLE_BOOSTER, CANAL_PEDIDOS
+
 
 from typing import Tuple
 
@@ -289,7 +290,7 @@ class ConfirmCheckoutView(discord.ui.View):
             )
 
             # Enviar para o canal de pedidos
-            pedidos_channel = get_pedidos_channel(interaction.guild)
+            pedidos_channel = discord.utils.get(interaction.guild.text_channels, name=CANAL_PEDIDOS)
             if pedidos_channel:
                 role = discord.utils.get(interaction.guild.roles, name="♡ ་ ┆𝐄qp ་ 𝐄ntregas")
                 if role:
