@@ -3,7 +3,6 @@
 .env.local
 .env.development
 .env.production
-config.py
 *.sqlite
 *.db
 *.cache
