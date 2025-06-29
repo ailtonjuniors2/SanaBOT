@@ -1,7 +1,7 @@
 import discord
 from carrinho import listar_carrinho, limpar_carrinho, remover_item, finalizar_compra, adicionar_item
 import discord.utils
-from config import ROLE_BOOSTER, get_pedidos_channel
+from config import ROLE_BOOSTER
 
 from typing import Tuple
 
