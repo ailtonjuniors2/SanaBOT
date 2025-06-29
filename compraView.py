@@ -6,12 +6,14 @@ from config import API_URL
 
 
 class CompraViewPorCategoria(discord.ui.View):
-    def __init__(self, user: discord.User, interaction_channel: discord.TextChannel, estoque: dict):
-        super().__init__(timeout=60)
+    def __init__(self, user: discord.Member, channel: discord.TextChannel):
+        super().__init__(timeout=180)  # Aumentado para 3 minutos
+        self.loading = None
         self.user = user
-        self.interaction_channel = interaction_channel
+        self.channel = channel
+        self.estoque = {}
+        self.categorias = []
         self.message = None
-        self.add_item(CategoriaDropdown(estoque))
 
         # Dropdown de categorias
         self.categoria_select = discord.ui.Select(
@@ -43,7 +45,7 @@ class CompraViewPorCategoria(discord.ui.View):
 
         self.loading = True
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
+            async with httpx.AsyncClient(timeout=30) as client:
                 response = await client.get(f"{API_URL}/estoque")
                 response.raise_for_status()
                 self.estoque = response.json()
@@ -176,29 +178,4 @@ class CompraViewPorCategoria(discord.ui.View):
             f"Itens disponíveis em {categoria}:",
             view=view_itens,
             ephemeral=True
-        )
-
-class CategoriaDropdown(discord.ui.Select):
-    def __init__(self, estoque: dict):
-        options = []
-        for categoria in estoque:
-            if estoque[categoria]:
-                options.append(discord.SelectOption(
-                    label=categoria.title(),
-                    value=categoria
-                ))
-
-        if not options:
-            options = [
-                discord.SelectOption(
-                    label="Nenhuma categoria disponível",
-                    value="nada"
-                )
-            ]
-
-        super().__init__(
-            placeholder="Selecione uma categoria:",
-            min_values=1,
-            max_values=1,
-            options=options
         )
