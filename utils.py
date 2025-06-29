@@ -28,8 +28,7 @@ async def atualizar_dropdowns_estoque(bot: discord.ext.commands.Bot, guild: disc
 
             # Envia mensagem atualizada
             embed = discord.Embed(
-                title=f"                  ︶ ⏝ ︶ <:03_laco_amarelo:1387876036494233841> ︶ ⏝ ︶ \n"
-                      f"⊱ <:emoji_59:1388880400558063636> ⸝⸝ Itens Disponíveis - {categoria}",
+                title=f"⊱ <:emoji_59:1388880400558063636> ⸝⸝ Itens Disponíveis - {categoria}",
                 description="<:03_topico:1387904528929521737> Selecione um item abaixo para visualizar o preço e a quantidade atual em estoque .ᐟ",
                 color=discord.Color.blue()
             )
