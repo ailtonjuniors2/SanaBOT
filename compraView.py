@@ -7,12 +7,13 @@ from config import API_URL
 
 class CompraViewPorCategoria(discord.ui.View):
     def __init__(self, user: discord.Member, channel: discord.TextChannel):
-        super().__init__(timeout=180)  # Aumentado para 3 minutos
+        super().__init__(timeout=180)
         self.user = user
         self.channel = channel
         self.estoque = {}
         self.categorias = []
         self.message = None
+        self.loading = False  # Novo: flag para controlar carregamento
 
         # Dropdown de categorias
         self.categoria_select = discord.ui.Select(
@@ -28,10 +29,22 @@ class CompraViewPorCategoria(discord.ui.View):
         # Inicia carregamento
         asyncio.create_task(self.carregar_estoque())
 
-    async def carregar_estoque(self):
-        try:
-            print(f"🔗 Buscando estoque de: {API_URL}/estoque")
+    async def on_timeout(self):
+        """Limpa a view quando o tempo expira"""
+        for item in self.children:
+            item.disabled = True
+        if self.message:
+            try:
+                await self.message.edit(view=self)
+            except:
+                pass
 
+    async def carregar_estoque(self):
+        if self.loading:  # Evita múltiplos carregamentos simultâneos
+            return
+
+        self.loading = True
+        try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.get(f"{API_URL}/estoque")
                 response.raise_for_status()
@@ -49,26 +62,30 @@ class CompraViewPorCategoria(discord.ui.View):
                 self.categoria_select.disabled = False
 
         except Exception as e:
-            import traceback
-            print("❌ Erro ao carregar estoque:")
-            traceback.print_exc()
-
             self.categoria_select.options = [
                 discord.SelectOption(label="Erro ao carregar", value="error")
             ]
             self.categoria_select.placeholder = "❌ Clique para recarregar"
+            print(f"Erro ao carregar estoque: {e}")
 
-        if self.message:
-            await self.message.edit(view=self)
+        finally:
+            self.loading = False
+            if self.message:
+                await self.message.edit(view=self)
 
     async def categoria_callback(self, interaction: discord.Interaction):
+        """Modificado para evitar recursão"""
         await interaction.response.defer()
 
-        if interaction.data['values'][0] in ["loading", "error"]:
-            await self.carregar_estoque()
+        if interaction.data['values'][0] == "error":
+            # Recarrega apenas se clicar no erro
+            if not self.loading:
+                await self.carregar_estoque()
             return
 
         categoria = interaction.data['values'][0]
+        if categoria in ["loading", "error"]:
+            return
 
         # Cria novo dropdown para itens
         view_itens = discord.ui.View(timeout=180)

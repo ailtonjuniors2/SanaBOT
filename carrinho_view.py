@@ -92,6 +92,8 @@ class AddItemsButton(discord.ui.Button):
         )
 
     async def callback(self, interaction: discord.Interaction):
+        if interaction.response.is_done():
+            return
         await interaction.response.defer(ephemeral=True)
         try:
             from compraView import CompraViewPorCategoria
