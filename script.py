@@ -39,6 +39,7 @@ async def on_ready():
         print(f"Erro ao testar API: {e}")
 
 
+
 # Comando para criar ticket com menu de categorias (botões)
 @bot.command()
 async def ticket(ctx):
