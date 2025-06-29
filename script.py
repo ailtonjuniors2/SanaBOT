@@ -296,12 +296,6 @@ async def comprar(ctx, categoria: str):
     # Cria a view de compra
     view = CompraViewPorCategoria(ctx.author, ctx.channel)  # Parâmetros corretos
 
-
-    await ctx.send(
-        f"Selecione os itens da categoria {categoria}:",
-        view=view,
-        delete_after=60
-    )
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(f"{API_URL}/estoque")
