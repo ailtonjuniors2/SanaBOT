@@ -8,6 +8,9 @@ import httpx
 import asyncio
 from preco_view import PrecoDropdownView
 from botao_ticket_view import CriarTicketView
+from fastapi import FastAPI
+import threading
+import uvicorn
 
 intents = discord.Intents.default()
 intents.messages = True
@@ -397,4 +400,18 @@ async def on_message(message):
         return
     await bot.process_commands(message)  # Processa comandos normalmente
 
-bot.run(os.getenv('DISCORD_TOKEN'), port=port)
+app = FastAPI()
+
+@app.get("/")
+def home():
+    return {"status": "Bot is running"}
+
+def run_api():
+    """Roda o FastAPI em uma thread separada."""
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+
+# Inicia a API web em segundo plano
+threading.Thread(target=run_api, daemon=True).start()
+
+# Inicia o bot Discord (SEM parâmetro 'port'!)
+bot.run(os.getenv('DISCORD_TOKEN'))
