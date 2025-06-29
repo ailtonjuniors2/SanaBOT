@@ -143,41 +143,6 @@ async def ticket(ctx):
 
         print(f"Erro no comando ticket: {type(e).__name__}: {e}")
 
-# Handler para os botões do ticket
-@bot.event
-async def on_interaction(interaction: discord.Interaction):
-    if interaction.type != discord.InteractionType.component:
-        return
-
-    try:
-        if interaction.data.get('custom_id') == "abrir_carrinho":
-            # Usar bot existente
-            async with httpx.AsyncClient() as client:
-                response = await client.get(f"{API_URL}/estoque")
-                estoque = response.json()
-
-            from carrinho_view import CarrinhoView
-            view = CarrinhoView(
-                user=interaction.user,
-                role_atendente=discord.utils.get(interaction.guild.roles, name="୨୧ ་ 𝐀tendente⸝⸝"),
-                estoque=estoque,
-                channel=interaction.channel
-            )
-
-            # Resposta única garantida
-            if not interaction.response.is_done():
-                await interaction.response.send_message(
-                    embed=view.create_embed(),
-                    view=view,
-                    ephemeral=True
-                )
-    except Exception as e:
-        print(f"Erro crítico: {type(e).__name__}: {e}")
-        if not interaction.response.is_done():
-            await interaction.response.send_message(
-                "❌ Ocorreu um erro inesperado",
-                ephemeral=True
-            )
 
 # Comando para adicionar item manualmente (só atendente)
 @bot.command()
