@@ -15,6 +15,7 @@ intents.guilds = True
 intents.members = True
 intents.message_content = True
 
+port = int(os.environ.get("PORT", 8000))
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
 
 
@@ -390,4 +391,10 @@ async def on_interaction_error(interaction: discord.Interaction, error: Exceptio
             ephemeral=True
         )
 
-bot.run(os.getenv('DISCORD_TOKEN'))
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:  # Ignora mensagens do próprio bot
+        return
+    await bot.process_commands(message)  # Processa comandos normalmente
+
+bot.run(os.getenv('DISCORD_TOKEN'), port=port)
