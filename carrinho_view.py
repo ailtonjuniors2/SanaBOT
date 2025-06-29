@@ -1,4 +1,6 @@
 import discord
+import httpx
+
 from carrinho import listar_carrinho, limpar_carrinho, remover_item, finalizar_compra, adicionar_item
 import discord.utils
 from config import ROLE_BOOSTER, CANAL_PEDIDOS, API_URL
