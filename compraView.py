@@ -40,7 +40,7 @@ class CompraViewPorCategoria(discord.ui.View):
                 pass
 
     async def carregar_estoque(self):
-        if self.loading:  # Evita múltiplos carregamentos simultâneos
+        if self.loading:
             return
 
         self.loading = True
@@ -49,10 +49,23 @@ class CompraViewPorCategoria(discord.ui.View):
                 response = await client.get(f"{API_URL}/estoque")
                 response.raise_for_status()
                 self.estoque = response.json()
-                self.categorias = [c for c in self.estoque.keys() if self.estoque[c]]
+
+                # Debug: Mostrar o que foi recebido da API
+                print(f"Dados recebidos da API: {self.estoque}")
+
+                if not isinstance(self.estoque, dict):
+                    raise ValueError("Resposta da API em formato inválido")
+
+                self.categorias = [c for c in self.estoque.keys() if self.estoque.get(c)]
 
                 if not self.categorias:
-                    raise ValueError("Nenhuma categoria disponível")
+                    # Tenta recarregar uma vez mais antes de dar erro
+                    response = await client.get(f"{API_URL}/estoque")
+                    response.raise_for_status()
+                    self.estoque = response.json()
+                    self.categorias = [c for c in self.estoque.keys() if self.estoque.get(c)]
+                    if not self.categorias:
+                        raise ValueError("API retornou estoque vazio após tentativa")
 
                 self.categoria_select.options = [
                     discord.SelectOption(label=categoria, value=categoria)
@@ -61,9 +74,16 @@ class CompraViewPorCategoria(discord.ui.View):
                 self.categoria_select.placeholder = "📂 Selecione uma categoria"
                 self.categoria_select.disabled = False
 
+        except httpx.RequestError as e:
+            self.categoria_select.options = [
+                discord.SelectOption(label="Erro de conexão com a API", value="error")
+            ]
+            self.categoria_select.placeholder = "❌ Clique para recarregar"
+            print(f"Erro de conexão com a API: {e}")
+
         except Exception as e:
             self.categoria_select.options = [
-                discord.SelectOption(label="Erro ao carregar", value="error")
+                discord.SelectOption(label=f"Erro: {str(e)[:100]}", value="error")
             ]
             self.categoria_select.placeholder = "❌ Clique para recarregar"
             print(f"Erro ao carregar estoque: {e}")
@@ -71,7 +91,10 @@ class CompraViewPorCategoria(discord.ui.View):
         finally:
             self.loading = False
             if self.message:
-                await self.message.edit(view=self)
+                try:
+                    await self.message.edit(view=self)
+                except:
+                    pass
 
     async def categoria_callback(self, interaction: discord.Interaction):
         """Modificado para evitar recursão"""

@@ -22,16 +22,22 @@ port = int(os.environ.get("PORT", 8000))
 bot = commands.Bot(command_prefix=BOT_PREFIX, intents=intents)
 
 
-
 @bot.event
 async def on_ready():
-    for guild in bot.guilds:
-        print(f"Bot logado como {bot.user}")
+    print(f"Bot logado como {bot.user}")
+    print(f"Variáveis de ambiente:")
+    print(f"API_URL: {API_URL}")
+    print(f"BOT_PREFIX: {BOT_PREFIX}")
 
-    # Verifica se o canal de pedidos existe
-    pedidos_channel = discord.utils.get(bot.get_all_channels(), name="﹙📝﹚⋆﹒𝐏edidos﹒")
-    if not pedidos_channel:
-        print("⚠️ Canal de pedidos não encontrado! Certifique-se de criar o canal '﹙📝﹚⋆﹒𝐏edidos﹒'")
+    # Teste da API
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{API_URL}/estoque")
+            print(f"Status da API: {response.status_code}")
+            print(f"Resposta da API: {response.text[:200]}...")  # Mostra apenas o início da resposta
+    except Exception as e:
+        print(f"Erro ao testar API: {e}")
+
 
 # Comando para criar ticket com menu de categorias (botões)
 @bot.command()
