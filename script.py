@@ -2,15 +2,13 @@ import os
 from config import API_URL, BOT_PREFIX
 import discord
 from discord.ext import commands
-from ticket_view import TicketView
-from compraView import CompraViewPorCategoria
 import httpx
 import asyncio
-from preco_view import PrecoDropdownView
-from botao_ticket_view import CriarTicketView
 from fastapi import FastAPI
 import threading
 import uvicorn
+from views import CriarTicketView, TicketView, CompraViewPorCategoria, PrecoDropdownView
+from utils import atualizar_dropdowns_estoque
 
 intents = discord.Intents.default()
 intents.messages = True
