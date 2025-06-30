@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-
+from compraView import CompraViewPorCategoria  # importe a sua view de compra
 from ticket_view import TicketView
 
 class CriarTicketView(discord.ui.View):
@@ -76,11 +76,14 @@ class CriarTicketView(discord.ui.View):
         embed.set_thumbnail(url=user.display_avatar.url)
         embed.set_footer(text="Atendimento disponível das 9h às 18h")
 
-        await ticket_channel.send(
+        # Cria a view de compra e envia no canal do ticket
+        compra_view = CompraViewPorCategoria(user=user, channel=ticket_channel)
+        msg_compra = await ticket_channel.send(
             content=f"{user.mention} {role_atendente.mention}",
             embed=embed,
-            view=TicketView(guild)
+            view=compra_view
         )
+        compra_view.message = msg_compra  # importante para editar a view depois
 
         await interaction.response.send_message(
             f"✅ Ticket criado com sucesso: {ticket_channel.mention}",

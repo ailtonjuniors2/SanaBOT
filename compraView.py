@@ -23,6 +23,11 @@ class CompraViewPorCategoria(discord.ui.View):
             except:
                 pass
 
+    def criar_callback(self, categoria: str):
+        async def callback(interaction: discord.Interaction):
+            await self.mostrar_itens(interaction, categoria)
+        return callback
+
     async def carregar_estoque(self):
         try:
             async with httpx.AsyncClient(timeout=60) as client:
@@ -35,16 +40,11 @@ class CompraViewPorCategoria(discord.ui.View):
             if not categorias:
                 raise ValueError("Nenhuma categoria disponível no estoque")
 
-            # Limpa os botões antigos, se existirem
             self.clear_items()
 
-            for categoria in categorias[:5]:  # Limite de 5 botões visuais por View
+            for categoria in categorias[:5]:
                 button = discord.ui.Button(label=categoria, style=discord.ButtonStyle.primary)
-
-                async def categoria_button_callback(interaction: discord.Interaction, categoria=categoria):
-                    await self.mostrar_itens(interaction, categoria)
-
-                button.callback = categoria_button_callback
+                button.callback = self.criar_callback(categoria)
                 self.add_item(button)
 
             if self.message:
