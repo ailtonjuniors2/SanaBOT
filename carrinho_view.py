@@ -82,6 +82,7 @@ class CarrinhoView(discord.ui.View):
         return embed
 
 
+# python
 class AddItemsButton(discord.ui.Button):
     def __init__(self):
         super().__init__(
@@ -96,8 +97,7 @@ class AddItemsButton(discord.ui.Button):
             return
         await interaction.response.defer(ephemeral=True)
         try:
-            from compraView import CompraViewPorCategoria
-            view = CompraViewPorCategoria(interaction.user, interaction.channel)
+            view = self._criar_compra_view(interaction.user, interaction.channel)
             message = await interaction.followup.send(
                 "Selecione uma categoria:",
                 view=view,
@@ -106,10 +106,15 @@ class AddItemsButton(discord.ui.Button):
             )
             view.message = message
         except Exception as e:
+            print(f"Erro ao abrir menu: {e}")  # Log no terminal
             await interaction.followup.send(
                 f"❌ Erro ao abrir menu: {str(e)}",
                 ephemeral=True
             )
+
+    def _criar_compra_view(self, user: discord.Member, channel: discord.TextChannel):
+        from compraView import CompraViewPorCategoria
+        return CompraViewPorCategoria(user, channel)
 
 
 class RemoveItemSelect(discord.ui.Select):
