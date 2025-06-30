@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from compraView import CompraViewPorCategoria  # importe a sua view de compra
-from ticket_view import TicketView
+from compraView import CompraViewPorCategoria  # Sua view de compra
+from ticket_view import TicketView  # Sua view com botões Abrir Carrinho e Fechar Ticket
 
 class CriarTicketView(discord.ui.View):
     def __init__(self, bot: commands.Bot):
@@ -13,10 +13,8 @@ class CriarTicketView(discord.ui.View):
         guild = interaction.guild
         user = interaction.user
 
-        existing_ticket = discord.utils.get(
-            guild.text_channels,
-            name=f"ticket-{user.name}"
-        )
+        # Verifica se já tem ticket aberto
+        existing_ticket = discord.utils.get(guild.text_channels, name=f"ticket-{user.name}")
         if existing_ticket:
             await interaction.response.send_message(
                 f"⚠️ Você já tem um ticket aberto: {existing_ticket.mention}",
@@ -69,21 +67,22 @@ class CriarTicketView(discord.ui.View):
                 "• Suporte técnico\n"
                 "• Dúvidas sobre produtos\n\n"
                 "🛒 **Gerenciar Carrinho**\n"
-                "Clique no botão abaixo para abrir seu carrinho de compras"
+                "Use os botões abaixo para navegar e controlar seu carrinho"
             ),
             color=discord.Color.blurple()
         )
         embed.set_thumbnail(url=user.display_avatar.url)
         embed.set_footer(text="Atendimento disponível das 9h às 18h")
 
-        # Cria a view de compra e envia no canal do ticket
+
+        # Envia embed com CompraViewPorCategoria
         compra_view = CompraViewPorCategoria(user=user, channel=ticket_channel)
-        msg_compra = await ticket_channel.send(
-            content=f"{user.mention} {role_atendente.mention}",
-            embed=embed,
-            view=compra_view
-        )
-        compra_view.message = msg_compra  # importante para editar a view depois
+        msg_compra = await ticket_channel.send(embed=embed, view=compra_view)
+        compra_view.message = msg_compra  # para permitir edição da view depois
+
+        # Envia mensagem com os botões Abrir Carrinho e Fechar Ticket (TicketView)
+        ticket_view = TicketView(guild=guild)
+        await ticket_channel.send("⚙️ Controles do ticket:", view=ticket_view)
 
         await interaction.response.send_message(
             f"✅ Ticket criado com sucesso: {ticket_channel.mention}",
