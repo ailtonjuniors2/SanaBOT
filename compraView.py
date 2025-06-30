@@ -39,32 +39,37 @@ class CompraViewPorCategoria(discord.ui.View):
             except:
                 pass
 
+    # MultipleFiles/compraView.py
     async def carregar_estoque(self):
+        print("DEBUG: carregar_estoque iniciado.")
         if self.loading:
+            print("DEBUG: carregar_estoque já está em andamento, retornando.")
             return
 
         self.loading = True
         try:
-            async with httpx.AsyncClient(timeout=30) as client:
+            print(f"DEBUG: Tentando conectar à API: {API_URL}/estoque")
+            async with httpx.AsyncClient(timeout=60) as client:  # Aumente o timeout se ainda não o fez
                 response = await client.get(f"{API_URL}/estoque")
                 response.raise_for_status()
                 self.estoque = response.json()
-
-                # Debug: Mostrar o que foi recebido da API
-                print(f"Dados recebidos da API: {self.estoque}")
+                print(f"DEBUG: Estoque recebido. Categorias: {list(self.estoque.keys())}")
 
                 if not isinstance(self.estoque, dict):
+                    print("DEBUG: Resposta da API em formato inválido.")
                     raise ValueError("Resposta da API em formato inválido")
 
                 self.categorias = [c for c in self.estoque.keys() if self.estoque.get(c)]
+                print(f"DEBUG: Categorias filtradas: {self.categorias}")
 
                 if not self.categorias:
-                    # Tenta recarregar uma vez mais antes de dar erro
+                    print("DEBUG: Nenhuma categoria encontrada, tentando recarregar uma vez.")
                     response = await client.get(f"{API_URL}/estoque")
                     response.raise_for_status()
                     self.estoque = response.json()
                     self.categorias = [c for c in self.estoque.keys() if self.estoque.get(c)]
                     if not self.categorias:
+                        print("DEBUG: API retornou estoque vazio após tentativa.")
                         raise ValueError("API retornou estoque vazio após tentativa")
 
                 self.categoria_select.options = [
@@ -73,28 +78,31 @@ class CompraViewPorCategoria(discord.ui.View):
                 ]
                 self.categoria_select.placeholder = "📂 Selecione uma categoria"
                 self.categoria_select.disabled = False
+                print("DEBUG: Dropdown de categorias atualizado e habilitado.")
 
         except httpx.RequestError as e:
+            print(f"DEBUG: Erro de conexão HTTPX em carregar_estoque: {e}")
             self.categoria_select.options = [
                 discord.SelectOption(label="Erro de conexão com a API", value="error")
             ]
             self.categoria_select.placeholder = "❌ Clique para recarregar"
-            print(f"Erro de conexão com a API: {e}")
-
         except Exception as e:
+            print(f"DEBUG: Erro geral em carregar_estoque: {e}")
             self.categoria_select.options = [
                 discord.SelectOption(label=f"Erro: {str(e)[:100]}", value="error")
             ]
             self.categoria_select.placeholder = "❌ Clique para recarregar"
-            print(f"Erro ao carregar estoque: {e}")
-
         finally:
             self.loading = False
+            print(f"DEBUG: carregar_estoque finalizado. self.message: {self.message is not None}")
             if self.message:
                 try:
                     await self.message.edit(view=self)
-                except:
-                    pass
+                    print("DEBUG: Mensagem da view editada com sucesso.")
+                except discord.NotFound:
+                    print("DEBUG: Mensagem da view não encontrada para edição.")
+                except Exception as e:
+                    print(f"DEBUG: Erro ao editar mensagem da view: {e}")
 
     async def categoria_callback(self, interaction: discord.Interaction):
         """Modificado para evitar recursão"""
