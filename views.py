@@ -104,7 +104,7 @@ class TicketView(discord.ui.View):
     async def abrir_carrinho(self, interaction: discord.Interaction, button: discord.ui.Button):
         try:
             if not interaction.response.is_done():
-                await interaction.response.defer(ephemeral=True, thinking=True)
+                await interaction.response.defer(ephemeral=False, thinking=True)
 
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.get(f"{API_URL}/estoque")
@@ -285,13 +285,13 @@ class AddItemsButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         if interaction.response.is_done():
             return
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer(ephemeral=False)
         try:
             view = CompraViewPorCategoria(interaction.user, interaction.channel)
             message = await interaction.followup.send(
                 "Selecione uma categoria:",
                 view=view,
-                ephemeral=True,
+                ephemeral=False,
                 wait=True
             )
             view.message = message
@@ -326,7 +326,7 @@ class RemoveItemSelect(discord.ui.Select):
         value = self.values[0]
         nome, categoria = value.split("::")
         remover_item(self.user.id, nome, categoria)
-        await interaction.response.send_message(f"✅ Removido: {nome}", ephemeral=True)
+        await interaction.response.send_message(f"✅ Removido: {nome}", ephemeral=False)
         if self.view and hasattr(self.view, "message") and self.view.message:
             await self.view.message.edit(embed=self.view.create_embed(), view=self.view)
 
@@ -346,7 +346,7 @@ class CheckoutButton(discord.ui.Button):
         from carrinho import listar_carrinho
         itens = listar_carrinho(self.user.id)
         if not itens:
-            await interaction.response.send_message("❌ Carrinho vazio!", ephemeral=True)
+            await interaction.response.send_message("❌ Carrinho vazio!", ephemeral=False)
             return
 
         texto_valores, _ = calcular_valores(itens, self.user)
@@ -366,7 +366,7 @@ class CheckoutButton(discord.ui.Button):
         await interaction.response.send_message(
             embed=confirm_embed,
             view=confirm_view,
-            ephemeral=True
+            ephemeral=False
         )
 
 class ClearCartButton(discord.ui.Button):
@@ -382,7 +382,7 @@ class ClearCartButton(discord.ui.Button):
     async def callback(self, interaction: discord.Interaction):
         from carrinho import limpar_carrinho
         limpar_carrinho(self.user.id)
-        await interaction.response.send_message("🛒 Carrinho esvaziado!", ephemeral=True)
+        await interaction.response.send_message("🛒 Carrinho esvaziado!", ephemeral=False)
         if self.view and hasattr(self.view, "message") and self.view.message:
             await self.view.message.edit(embed=self.view.create_embed(), view=self.view)
 
@@ -421,7 +421,7 @@ class ConfirmCheckoutView(discord.ui.View):
             print(f"Erro ao processar compra: {e}")
             await interaction.followup.send(
                 "❌ Ocorreu um erro ao processar sua compra.",
-                ephemeral=True
+                ephemeral=False
             )
 
     async def _processar_compra(self, interaction: discord.Interaction):
@@ -429,7 +429,7 @@ class ConfirmCheckoutView(discord.ui.View):
             from carrinho import listar_carrinho, finalizar_compra
             itens_comprados = listar_carrinho(self.user.id)
             if not itens_comprados:
-                await interaction.followup.send("❌ Carrinho vazio!", ephemeral=True)
+                await interaction.followup.send("❌ Carrinho vazio!", ephemeral=False)
                 return
 
             texto_valores, tem_desconto = calcular_valores(itens_comprados, self.user)
@@ -518,7 +518,7 @@ class ConfirmCheckoutView(discord.ui.View):
             print(f"Erro ao processar compra: {e}")
             await interaction.followup.send(
                 "❌ Ocorreu um erro ao processar sua compra. Por favor, tente novamente.",
-                ephemeral=True
+                ephemeral=False
             )
 
 class AddItemsDropdown(discord.ui.Select):
@@ -550,7 +550,7 @@ class AddItemsDropdown(discord.ui.Select):
         adicionar_item(interaction.user.id, nome, categoria, preco, quantidade)
         await interaction.response.send_message(
             f"✅ Adicionado ao carrinho: {nome} ({categoria}) x{quantidade}",
-            ephemeral=True
+            ephemeral=False
         )
 
         if self.view and hasattr(self.view, "message") and self.view.message:
@@ -679,7 +679,7 @@ class CompraViewPorCategoria(discord.ui.View):
             if self.estoque[categoria][item]['quantidade'] < quantidade:
                 await interaction.response.send_message(
                     "❌ Quantidade indisponível no estoque",
-                    ephemeral=True
+                    ephemeral=False
                 )
                 return
 
@@ -688,7 +688,7 @@ class CompraViewPorCategoria(discord.ui.View):
 
             await interaction.response.send_message(
                 f"✅ {item} adicionado ao carrinho!",
-                ephemeral=True
+                ephemeral=False
             )
 
             from views import CarrinhoView
@@ -709,7 +709,7 @@ class CompraViewPorCategoria(discord.ui.View):
             if mensagem_encontrada:
                 await mensagem_encontrada.edit(embed=view.create_embed(), view=view)
             else:
-                msg = await interaction.followup.send(embed=view.create_embed(), view=view, ephemeral=True)
+                msg = await interaction.followup.send(embed=view.create_embed(), view=view, ephemeral=False)
                 view.message = msg
 
         select_itens.callback = item_callback
@@ -742,7 +742,7 @@ class CompraViewPorCategoria(discord.ui.View):
         await interaction.followup.send(
             f"Itens disponíveis em {categoria}:",
             view=view_itens,
-            ephemeral=True
+            ephemeral=False
         )
 
 # ==================== Price Related Views ====================
